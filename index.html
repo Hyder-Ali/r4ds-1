@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Hyder Ali">
+
+<title>Analyzing Music Data</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="analysis_files/libs/clipboard/clipboard.min.js"></script>
+<script src="analysis_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="analysis_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="analysis_files/libs/quarto-html/popper.min.js"></script>
+<script src="analysis_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="analysis_files/libs/quarto-html/anchor.min.js"></script>
+<link href="analysis_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="analysis_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="analysis_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="analysis_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="analysis_files/libs/bootstrap/bootstrap-de9ea4695b5809f5b49b6072e50bb385.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Analyzing Music Data</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Hyder Ali </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction-dataset-preview" class="level2">
+<h2 class="anchored" data-anchor-id="introduction-dataset-preview">Introduction &amp; Dataset Preview</h2>
+<p>We are analyzing Billboard Hot 100 chart data from the year 2000. Below is a preview of the first 10 rows of the dataset, showing the artist, track, entry date, and the weekly rankings for the first four weeks:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 22%">
+<col style="width: 35%">
+<col style="width: 19%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">artist</th>
+<th style="text-align: left;">track</th>
+<th style="text-align: left;">date.entered</th>
+<th style="text-align: right;">wk1</th>
+<th style="text-align: right;">wk2</th>
+<th style="text-align: right;">wk3</th>
+<th style="text-align: right;">wk4</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">2 Pac</td>
+<td style="text-align: left;">Baby Don’t Cry (Keep…</td>
+<td style="text-align: left;">2000-02-26</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">82</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">77</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2Ge+her</td>
+<td style="text-align: left;">The Hardest Part Of …</td>
+<td style="text-align: left;">2000-09-02</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">92</td>
+<td style="text-align: right;">NA</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">3 Doors Down</td>
+<td style="text-align: left;">Kryptonite</td>
+<td style="text-align: left;">2000-04-08</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: right;">67</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">3 Doors Down</td>
+<td style="text-align: left;">Loser</td>
+<td style="text-align: left;">2000-10-21</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">69</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">504 Boyz</td>
+<td style="text-align: left;">Wobble Wobble</td>
+<td style="text-align: left;">2000-04-15</td>
+<td style="text-align: right;">57</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">17</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">98^0</td>
+<td style="text-align: left;">Give Me Just One Nig…</td>
+<td style="text-align: left;">2000-08-19</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">39</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: right;">26</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">A*Teens</td>
+<td style="text-align: left;">Dancing Queen</td>
+<td style="text-align: left;">2000-07-08</td>
+<td style="text-align: right;">97</td>
+<td style="text-align: right;">97</td>
+<td style="text-align: right;">96</td>
+<td style="text-align: right;">95</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Aaliyah</td>
+<td style="text-align: left;">I Don’t Wanna</td>
+<td style="text-align: left;">2000-01-29</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">62</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">41</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Aaliyah</td>
+<td style="text-align: left;">Try Again</td>
+<td style="text-align: left;">2000-03-18</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: right;">28</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Adams, Yolanda</td>
+<td style="text-align: left;">Open My Heart</td>
+<td style="text-align: left;">2000-08-26</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">74</td>
+<td style="text-align: right;">69</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="analysis-of-entry-dates" class="level2">
+<h2 class="anchored" data-anchor-id="analysis-of-entry-dates">Analysis of Entry Dates</h2>
+<p>Below are the summary statistics for when songs entered the Billboard Hot 100 chart:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>        Min.      1st Qu.       Median         Mean      3rd Qu.         Max. 
+"1999-06-05" "2000-02-05" "2000-04-29" "2000-05-03" "2000-08-12" "2000-12-30" </code></pre>
+</div>
+</div>
+</section>
+<section id="distribution-of-chart-ranks" class="level2">
+<h2 class="anchored" data-anchor-id="distribution-of-chart-ranks">Distribution of Chart Ranks</h2>
+<p>Next, we analyze the distribution of chart ranks at two different points in time: during the first week of entry (Week 1) and after six weeks on the chart (Week 6).</p>
+<section id="first-week-chart-rank-distribution" class="level3">
+<h3 class="anchored" data-anchor-id="first-week-chart-rank-distribution">First-Week Chart Rank Distribution</h3>
+<p>This chart illustrates where songs typically debut on the Hot 100. Lower values indicate higher (better) chart rankings.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="analysis_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="sixth-week-chart-rank-distribution" class="level3">
+<h3 class="anchored" data-anchor-id="sixth-week-chart-rank-distribution">Sixth-Week Chart Rank Distribution</h3>
+<p>By the sixth week, some songs have dropped off the chart, while others have moved up. This chart shows the distribution of ranks for the remaining active songs.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="analysis_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="missing-and-present-rankings-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="missing-and-present-rankings-analysis">Missing and Present Rankings Analysis</h2>
+<p>To see how many songs remain on the chart over time, we calculate the number of present (active) and missing (dropped off) rankings for selected weeks:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Week</th>
+<th style="text-align: right;">Present</th>
+<th style="text-align: right;">Missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">wk1</td>
+<td style="text-align: right;">317</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">wk4</td>
+<td style="text-align: right;">300</td>
+<td style="text-align: right;">17</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">wk10</td>
+<td style="text-align: right;">244</td>
+<td style="text-align: right;">73</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">wk20</td>
+<td style="text-align: right;">146</td>
+<td style="text-align: right;">171</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">wk40</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">310</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">wk76</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">317</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="song-chart-re-entry-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="song-chart-re-entry-analysis">Song Chart Re-entry Analysis</h2>
+<p>We investigate whether any songs leave the Hot 100 chart and later re-enter it. A song is considered to have re-entered if there is a gap of one or more weeks (recorded as <code>NA</code>) between active chart positions:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Song Status</th>
+<th style="text-align: right;">Number of Songs</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Never Re-entered</td>
+<td style="text-align: right;">302</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Re-entered Chart</td>
+<td style="text-align: right;">15</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="week-1-vs.-week-6-rank-comparison" class="level2">
+<h2 class="anchored" data-anchor-id="week-1-vs.-week-6-rank-comparison">Week 1 vs.&nbsp;Week 6 Rank Comparison</h2>
+<p>We compare each song’s Week 1 (debut) rank and Week 6 rank. We categorize songs based on whether their chart rank improved (rank number decreased), stayed the same, got worse (rank number increased), or if they were missing (dropped off the chart) by Week 6:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Week 6 Status</th>
+<th style="text-align: right;">Number of Songs</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Got Worse</td>
+<td style="text-align: right;">27</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Improved</td>
+<td style="text-align: right;">251</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Missing by Week 6</td>
+<td style="text-align: right;">37</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Stayed the Same</td>
+<td style="text-align: right;">2</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>For songs that remained on the chart in both Week 1 and Week 6, we calculate the median change in rank. Note that positive numbers for positions climbed represent improvement (e.g., climbing from rank 80 to rank 53 is +27 positions):</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 47%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Median Positions Climbed (wk1 - wk6)</th>
+<th style="text-align: right;">Median Numerical Rank Change (wk6 - wk1)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">-27</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="song-rankings-over-time" class="level2">
+<h2 class="anchored" data-anchor-id="song-rankings-over-time">Song Rankings Over Time</h2>
+<p>We reshape the <code>billboard</code> dataset from wide format to long format, converting all the week columns (<code>wk1</code> to <code>wk76</code>) into two columns: <code>week</code> and <code>rank</code>. We then plot the trajectory of each song’s ranking over time:</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="analysis_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="song-level-summary-and-notable-achievements" class="level2">
+<h2 class="anchored" data-anchor-id="song-level-summary-and-notable-achievements">Song-Level Summary and Notable Achievements</h2>
+<p>We aggregate the reshaped billboard dataset to create a song-level summary. For each track, we identify its debut (first) rank, its best (peak) rank, the first week it reached its peak rank, and the total number of weeks it spent active on the Hot 100 chart.</p>
+<p>Here is a preview of the first 10 songs in this summary:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 26%">
+<col style="width: 12%">
+<col style="width: 11%">
+<col style="width: 20%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Artist</th>
+<th style="text-align: left;">Track</th>
+<th style="text-align: right;">First Rank</th>
+<th style="text-align: right;">Best Rank</th>
+<th style="text-align: right;">Week of Best Rank</th>
+<th style="text-align: right;">Total Weeks</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">2 Pac</td>
+<td style="text-align: left;">Baby Don’t Cry (Keep…</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2Ge+her</td>
+<td style="text-align: left;">The Hardest Part Of …</td>
+<td style="text-align: right;">91</td>
+<td style="text-align: right;">87</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">3 Doors Down</td>
+<td style="text-align: left;">Kryptonite</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">53</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">3 Doors Down</td>
+<td style="text-align: left;">Loser</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">55</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">20</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">504 Boyz</td>
+<td style="text-align: left;">Wobble Wobble</td>
+<td style="text-align: right;">57</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">18</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">98^0</td>
+<td style="text-align: left;">Give Me Just One Nig…</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">20</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">A*Teens</td>
+<td style="text-align: left;">Dancing Queen</td>
+<td style="text-align: right;">97</td>
+<td style="text-align: right;">95</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Aaliyah</td>
+<td style="text-align: left;">I Don’t Wanna</td>
+<td style="text-align: right;">84</td>
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">20</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Aaliyah</td>
+<td style="text-align: left;">Try Again</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">32</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Adams, Yolanda</td>
+<td style="text-align: left;">Open My Heart</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">57</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">20</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<section id="notable-top-10-song-achievements" class="level3">
+<h3 class="anchored" data-anchor-id="notable-top-10-song-achievements">Notable Top-10 Song Achievements</h3>
+<p>Based on this summary, we identify three notable achievements among songs that reached the Top-10: * <strong>The Fastest Song to Reach Number One:</strong> The song that reached the #1 spot in the fewest weeks. * <strong>The Slowest Song to Reach Number One:</strong> The song that reached the #1 spot in the most weeks. * <strong>The Top-10 Song with the Longest Chart Run:</strong> The track that peaked in the top-10 and logged the most total weeks on the chart.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 28%">
+<col style="width: 9%">
+<col style="width: 7%">
+<col style="width: 11%">
+<col style="width: 10%">
+<col style="width: 19%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Category</th>
+<th style="text-align: left;">Artist</th>
+<th style="text-align: left;">Track</th>
+<th style="text-align: right;">First Rank</th>
+<th style="text-align: right;">Best Rank</th>
+<th style="text-align: right;">Week of Best Rank</th>
+<th style="text-align: right;">Total Weeks</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Fastest to reach #1</td>
+<td style="text-align: left;">Madonna</td>
+<td style="text-align: left;">Music</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">24</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Slowest to reach #1</td>
+<td style="text-align: left;">Lonestar</td>
+<td style="text-align: left;">Amazed</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">55</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Longest chart run (Top-10)</td>
+<td style="text-align: left;">Creed</td>
+<td style="text-align: left;">Higher</td>
+<td style="text-align: right;">81</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">46</td>
+<td style="text-align: right;">57</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</section>
+<section id="plotting-top-10-song-trajectories" class="level2">
+<h2 class="anchored" data-anchor-id="plotting-top-10-song-trajectories">Plotting Top-10 Song Trajectories</h2>
+<p>Below, we filter the reshaped dataset to include only songs that reached the Top-10 at some point during their run. We plot their trajectories in gray, and highlight our three notable songs in distinct colors to compare their journeys on the chart:</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="analysis_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="reading-external-music-data" class="level2">
+<h2 class="anchored" data-anchor-id="reading-external-music-data">Reading External Music Data</h2>
+<p>Finally, we load the external <code>music.csv</code> dataset using <code>readr::read_csv()</code> (with column types messaging suppressed) and print the resulting tibble:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10,000 × 35
+   artist.familiarity artist.hotttnesss artist.id          artist.latitude
+                &lt;dbl&gt;             &lt;dbl&gt; &lt;chr&gt;                        &lt;dbl&gt;
+ 1              0.582             0.402 ARD7TVE1187B99BFB1             0  
+ 2              0.631             0.417 ARMJAGH1187FB546F3            35.1
+ 3              0.487             0.343 ARKRRTF1187B9984DA             0  
+ 4              0.630             0.454 AR7G5I41187FB4CE6C             0  
+ 5              0.651             0.402 ARXR32B1187FB57099             0  
+ 6              0.535             0.385 ARKFYS91187B98E58F             0  
+ 7              0.556             0.262 ARD0S291187B9B7BF5             0  
+ 8              0.801             0.606 AR10USD1187B99F3F1             0  
+ 9              0.427             0.332 AR8ZCNI1187B9A069B             0  
+10              0.551             0.423 ARNTLGG11E2835DDB9             0  
+# ℹ 9,990 more rows
+# ℹ 31 more variables: artist.location &lt;dbl&gt;, artist.longitude &lt;dbl&gt;,
+#   artist.name &lt;chr&gt;, artist.similar &lt;dbl&gt;, artist.terms &lt;chr&gt;,
+#   artist.terms_freq &lt;dbl&gt;, release.id &lt;dbl&gt;, release.name &lt;dbl&gt;,
+#   song.artist_mbtags &lt;dbl&gt;, song.artist_mbtags_count &lt;dbl&gt;,
+#   song.bars_confidence &lt;dbl&gt;, song.bars_start &lt;dbl&gt;,
+#   song.beats_confidence &lt;dbl&gt;, song.beats_start &lt;dbl&gt;, song.duration &lt;dbl&gt;, …</code></pre>
+</div>
+</div>
+</section>
+<section id="structure-of-artist-columns" class="level2">
+<h2 class="anchored" data-anchor-id="structure-of-artist-columns">Structure of Artist Columns</h2>
+<p>Below, we select only the columns containing artist-related information from the <code>music</code> dataset and display their structure, including column types and sample values, using <code>dplyr::glimpse()</code>:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 10,000
+Columns: 12
+$ artist.familiarity       &lt;dbl&gt; 0.58179377, 0.63063004, 0.48735679, 0.6303823…
+$ artist.hotttnesss        &lt;dbl&gt; 0.4019975, 0.4174996, 0.3434284, 0.4542312, 0…
+$ artist.id                &lt;chr&gt; "ARD7TVE1187B99BFB1", "ARMJAGH1187FB546F3", "…
+$ artist.latitude          &lt;dbl&gt; 0.00000, 35.14968, 0.00000, 0.00000, 0.00000,…
+$ artist.location          &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ artist.longitude         &lt;dbl&gt; 0.00000, -90.04892, 0.00000, 0.00000, 0.00000…
+$ artist.name              &lt;chr&gt; "Casual", "The Box Tops", "Sonora Santanera",…
+$ artist.similar           &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ artist.terms             &lt;chr&gt; "hip hop", "blue-eyed soul", "salsa", "pop ro…
+$ artist.terms_freq        &lt;dbl&gt; 1.0000000, 1.0000000, 1.0000000, 0.9885839, 0…
+$ song.artist_mbtags       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ song.artist_mbtags_count &lt;dbl&gt; 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, …</code></pre>
+</div>
+</div>
+<section id="explanation-of-artist-familiarity-and-hotttnesss" class="level3">
+<h3 class="anchored" data-anchor-id="explanation-of-artist-familiarity-and-hotttnesss">Explanation of Artist Familiarity and Hotttnesss</h3>
+<p>Based on the documentation for the Million Song Dataset: * <strong><code>artist.familiarity</code></strong>: This column contains a numerical estimate (ranging from <code>0</code> to <code>1</code>) indicating how “familiar” or well-known the artist is to the general listening public. It is calculated by The Echo Nest (now part of Spotify) using aggregated statistics such as the artist’s historical listening counts, playlist appearances, and web metadata. * <strong><code>artist.hotttnesss</code></strong>: This column contains a numerical estimate (ranging from <code>0</code> to <code>1</code>) measuring the artist’s current popularity or “buzz” at the time the dataset was compiled. Unlike familiarity—which reflects long-term recognition—“hotttnesss” represents short-term momentum, capturing social media attention, web search trends, and recent radio play.</p>
+</section>
+</section>
+<section id="summary-statistics-for-key-variables" class="level2">
+<h2 class="anchored" data-anchor-id="summary-statistics-for-key-variables">Summary Statistics for Key Variables</h2>
+<p>Below, we compute the summary statistics—including the minimum, 1st quartile (Q1), median, mean, 3rd quartile (Q3), and maximum—for <code>artist.familiarity</code>, <code>artist.hotttnesss</code>, <code>song.year</code>, and <code>song.tempo</code> using a reshaped summary table:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 22%">
+<col style="width: 4%">
+<col style="width: 13%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 15%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: right;">Min</th>
+<th style="text-align: right;">Q1</th>
+<th style="text-align: right;">Median</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Q3</th>
+<th style="text-align: right;">Max</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">artist.familiarity</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.4675700</td>
+<td style="text-align: right;">0.5635836</td>
+<td style="text-align: right;">0.5652295</td>
+<td style="text-align: right;">0.6680202</td>
+<td style="text-align: right;">1.000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">artist.hotttnesss</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.3252656</td>
+<td style="text-align: right;">0.3807423</td>
+<td style="text-align: right;">0.3855522</td>
+<td style="text-align: right;">0.4538581</td>
+<td style="text-align: right;">1.082503</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">song.tempo</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">96.9595000</td>
+<td style="text-align: right;">120.1565000</td>
+<td style="text-align: right;">122.9009133</td>
+<td style="text-align: right;">144.0067500</td>
+<td style="text-align: right;">262.828000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">song.year</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">934.7046000</td>
+<td style="text-align: right;">2000.0000000</td>
+<td style="text-align: right;">2010.000000</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<section id="observations" class="level3">
+<h3 class="anchored" data-anchor-id="observations">Observations</h3>
+<ul>
+<li><strong>Data Quality Issue for <code>song.year</code></strong>: Note that <code>song.year</code> has a minimum, Q1, and median of <code>0</code>. This indicates a significant portion of missing year values that are coded as <code>0</code> in the dataset.</li>
+<li><strong>Range of <code>artist.hotttnesss</code></strong>: The maximum value for <code>artist.hotttnesss</code> is slightly above <code>1</code> (at <code>1.08</code>), indicating minor outliers in the algorithm’s output metrics.</li>
+</ul>
+</section>
+</section>
+<section id="song-release-year-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="song-release-year-distribution">Song Release Year Distribution</h2>
+<p>Below, we filter out songs with missing release years (where <code>song.year == 0</code>) and plot the distribution of release years for the remaining tracks. The total number of valid songs is dynamically computed and included in the chart’s subtitle:</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="analysis_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="preview-of-human-readable-song-data" class="level2">
+<h2 class="anchored" data-anchor-id="preview-of-human-readable-song-data">Preview of Human-Readable Song Data</h2>
+<p>Below, we select and format the most human-readable columns of the <code>music</code> dataset, presenting a preview table of the first 10 rows:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 8%">
+<col style="width: 17%">
+<col style="width: 15%">
+<col style="width: 11%">
+<col style="width: 9%">
+<col style="width: 10%">
+<col style="width: 4%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Artist Name</th>
+<th style="text-align: right;">Location</th>
+<th style="text-align: left;">Coordinates</th>
+<th style="text-align: left;">Genre</th>
+<th style="text-align: right;">Familiarity</th>
+<th style="text-align: right;">Hotness</th>
+<th style="text-align: right;">Song Title</th>
+<th style="text-align: right;">Year</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Casual</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0, 0</td>
+<td style="text-align: left;">hip hop</td>
+<td style="text-align: right;">0.5817938</td>
+<td style="text-align: right;">0.4019975</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">The Box Tops</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">35.1497, -90.0489</td>
+<td style="text-align: left;">blue-eyed soul</td>
+<td style="text-align: right;">0.6306300</td>
+<td style="text-align: right;">0.4174996</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1969</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sonora Santanera</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0, 0</td>
+<td style="text-align: left;">salsa</td>
+<td style="text-align: right;">0.4873568</td>
+<td style="text-align: right;">0.3434284</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Adam Ant</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0, 0</td>
+<td style="text-align: left;">pop rock</td>
+<td style="text-align: right;">0.6303823</td>
+<td style="text-align: right;">0.4542312</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1982</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Gob</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0, 0</td>
+<td style="text-align: left;">pop punk</td>
+<td style="text-align: right;">0.6510457</td>
+<td style="text-align: right;">0.4017237</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2007</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Jeff And Sheri Easter</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0, 0</td>
+<td style="text-align: left;">southern gospel</td>
+<td style="text-align: right;">0.5352927</td>
+<td style="text-align: right;">0.3854706</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Rated R</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0, 0</td>
+<td style="text-align: left;">breakbeat</td>
+<td style="text-align: right;">0.5564956</td>
+<td style="text-align: right;">0.2619412</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Tweeterfriendly Music</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0, 0</td>
+<td style="text-align: left;">post-hardcore</td>
+<td style="text-align: right;">0.8011364</td>
+<td style="text-align: right;">0.6055071</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Planet P Project</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0, 0</td>
+<td style="text-align: left;">new wave</td>
+<td style="text-align: right;">0.4266679</td>
+<td style="text-align: right;">0.3322757</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1984</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Clp</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0, 0</td>
+<td style="text-align: left;">breakcore</td>
+<td style="text-align: right;">0.5505137</td>
+<td style="text-align: right;">0.4227056</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="analyzing-placeholders-and-missing-data" class="level2">
+<h2 class="anchored" data-anchor-id="analyzing-placeholders-and-missing-data">Analyzing Placeholders and Missing Data</h2>
+<p>Many columns in this dataset contain placeholder values (coded as <code>0</code>) rather than typical <code>NA</code> values to represent missing data. Below, we count the number of rows containing these placeholders in <code>artist.location</code>, <code>release.name</code>, <code>song.title</code>, <code>song.year</code>, <code>artist.familiarity</code>, and <code>artist.hotttnesss</code>:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Column Name</th>
+<th style="text-align: right;">Placeholder Count</th>
+<th style="text-align: right;">Total Rows</th>
+<th style="text-align: right;">Percentage (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">artist.location</td>
+<td style="text-align: right;">9999</td>
+<td style="text-align: right;">10000</td>
+<td style="text-align: right;">99.99</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">release.name</td>
+<td style="text-align: right;">9989</td>
+<td style="text-align: right;">10000</td>
+<td style="text-align: right;">99.89</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">song.title</td>
+<td style="text-align: right;">9992</td>
+<td style="text-align: right;">10000</td>
+<td style="text-align: right;">99.92</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">song.year</td>
+<td style="text-align: right;">5320</td>
+<td style="text-align: right;">10000</td>
+<td style="text-align: right;">53.20</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">artist.familiarity</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">10000</td>
+<td style="text-align: right;">0.24</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">artist.hotttnesss</td>
+<td style="text-align: right;">496</td>
+<td style="text-align: right;">10000</td>
+<td style="text-align: right;">4.96</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="artist-coordinate-analysis-usable-vs.-placeholder" class="level2">
+<h2 class="anchored" data-anchor-id="artist-coordinate-analysis-usable-vs.-placeholder">Artist Coordinate Analysis (Usable vs.&nbsp;Placeholder)</h2>
+<p>Artist geographic locations are stored as latitude and longitude coordinates. We define coordinates as <strong>placeholder</strong> if both the latitude and longitude are exactly <code>0</code>, and <strong>usable</strong> if at least one coordinate is non-zero. Below, we count the number of placeholder vs.&nbsp;usable coordinates at both the unique artist level and the song/record level:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Level</th>
+<th style="text-align: left;">Coordinate Status</th>
+<th style="text-align: right;">Count</th>
+<th style="text-align: right;">Percentage (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Unique Artist Level</td>
+<td style="text-align: left;">Placeholder (Both 0)</td>
+<td style="text-align: right;">2830</td>
+<td style="text-align: right;">63.78</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unique Artist Level</td>
+<td style="text-align: left;">Usable Coordinates</td>
+<td style="text-align: right;">1607</td>
+<td style="text-align: right;">36.22</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Song/Record Level</td>
+<td style="text-align: left;">Placeholder (Both 0)</td>
+<td style="text-align: right;">6258</td>
+<td style="text-align: right;">62.58</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Song/Record Level</td>
+<td style="text-align: left;">Usable Coordinates</td>
+<td style="text-align: right;">3742</td>
+<td style="text-align: right;">37.42</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="geographic-distribution-of-artists-by-song-release-year" class="level2">
+<h2 class="anchored" data-anchor-id="geographic-distribution-of-artists-by-song-release-year">Geographic Distribution of Artists by Song Release Year</h2>
+<p>Below, we visualize the geographic locations of music artists on a world map, color-coded by the release year of their songs. We filter out artists with placeholder coordinates (where both latitude and longitude are <code>0</code>) and those with missing song release years (where <code>song.year == 0</code>). The remaining artist locations are plotted as points colored by the release year (using the viridis color scale) on a world map background retrieved from the <code>maps</code> package:</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="analysis_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
