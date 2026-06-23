@@ -375,3 +375,243 @@ top10_trajectories |>
     legend.title = element_text(face = "bold")
   )
 ```
+
+## Reading External Music Data
+
+Finally, we load the external `music.csv` dataset using `readr::read_csv()` (with column types messaging suppressed) and print the resulting tibble:
+
+```{r}
+#| message: false
+#| cache: true
+music_data <- read_csv("data/music.csv", show_col_types = FALSE)
+music_data
+```
+
+## Structure of Artist Columns
+
+Below, we select only the columns containing artist-related information from the `music` dataset and display their structure, including column types and sample values, using `dplyr::glimpse()`:
+
+```{r}
+#| message: false
+#| cache: true
+music_data |>
+  select(contains("artist")) |>
+  glimpse()
+```
+
+### Explanation of Artist Familiarity and Hotttnesss
+
+Based on the documentation for the Million Song Dataset:
+* **`artist.familiarity`**: This column contains a numerical estimate (ranging from `0` to `1`) indicating how "familiar" or well-known the artist is to the general listening public. It is calculated by The Echo Nest (now part of Spotify) using aggregated statistics such as the artist's historical listening counts, playlist appearances, and web metadata.
+* **`artist.hotttnesss`**: This column contains a numerical estimate (ranging from `0` to `1`) measuring the artist's current popularity or "buzz" at the time the dataset was compiled. Unlike familiarity—which reflects long-term recognition—"hotttnesss" represents short-term momentum, capturing social media attention, web search trends, and recent radio play.
+
+## Summary Statistics for Key Variables
+
+Below, we compute the summary statistics—including the minimum, 1st quartile (Q1), median, mean, 3rd quartile (Q3), and maximum—for `artist.familiarity`, `artist.hotttnesss`, `song.year`, and `song.tempo` using a reshaped summary table:
+
+```{r}
+#| message: false
+#| cache: true
+music_data |>
+  select(artist.familiarity, artist.hotttnesss, song.year, song.tempo) |>
+  pivot_longer(everything(), names_to = "Variable", values_to = "Value") |>
+  group_by(Variable) |>
+  summarise(
+    Min = min(Value, na.rm = TRUE),
+    Q1 = quantile(Value, 0.25, na.rm = TRUE),
+    Median = median(Value, na.rm = TRUE),
+    Mean = mean(Value, na.rm = TRUE),
+    Q3 = quantile(Value, 0.75, na.rm = TRUE),
+    Max = max(Value, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  knitr::kable()
+```
+
+### Observations
+* **Data Quality Issue for `song.year`**: Note that `song.year` has a minimum, Q1, and median of `0`. This indicates a significant portion of missing year values that are coded as `0` in the dataset.
+* **Range of `artist.hotttnesss`**: The maximum value for `artist.hotttnesss` is slightly above `1` (at `1.08`), indicating minor outliers in the algorithm's output metrics.
+
+## Song Release Year Distribution
+
+Below, we filter out songs with missing release years (where `song.year == 0`) and plot the distribution of release years for the remaining tracks. The total number of valid songs is dynamically computed and included in the chart's subtitle:
+
+```{r}
+#| message: false
+#| cache: true
+# 1. Filter out missing years (coded as 0)
+valid_year_data <- music_data |>
+  filter(song.year != 0)
+
+# 2. Get the count of valid songs
+num_songs_year <- nrow(valid_year_data)
+
+# 3. Plot the year distribution
+valid_year_data |>
+  ggplot(aes(x = song.year)) +
+  geom_bar(fill = "#2b5c8f", color = "white", width = 0.8) +
+  scale_x_continuous(breaks = seq(1930, 2010, 10)) +
+  labs(
+    title = "Distribution of Songs by Release Year",
+    subtitle = paste0("Release years for songs with valid data (n = ", scales::comma(num_songs_year), ")"),
+    x = "Release Year",
+    y = "Number of Songs"
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(
+    plot.title = element_text(face = "bold", size = 13, color = "#2c3e50"),
+    plot.subtitle = element_text(size = 10, color = "#7f8c8d", margin = margin(b = 10)),
+    axis.title = element_text(face = "bold", color = "#34495e")
+  )
+```
+
+## Preview of Human-Readable Song Data
+
+Below, we select and format the most human-readable columns of the `music` dataset, presenting a preview table of the first 10 rows:
+
+```{r}
+#| message: false
+#| cache: true
+music_data |>
+  select(
+    `Artist Name` = artist.name,
+    Location = artist.location,
+    Latitude = artist.latitude,
+    Longitude = artist.longitude,
+    Genre = artist.terms,
+    Familiarity = artist.familiarity,
+    Hotness = artist.hotttnesss,
+    `Song Title` = song.title,
+    Year = song.year
+  ) |>
+  mutate(
+    Coordinates = paste0(round(Latitude, 4), ", ", round(Longitude, 4))
+  ) |>
+  select(`Artist Name`, Location, Coordinates, Genre, Familiarity, Hotness, `Song Title`, Year) |>
+  head(10) |>
+  knitr::kable()
+```
+
+## Analyzing Placeholders and Missing Data
+
+Many columns in this dataset contain placeholder values (coded as `0`) rather than typical `NA` values to represent missing data. Below, we count the number of rows containing these placeholders in `artist.location`, `release.name`, `song.title`, `song.year`, `artist.familiarity`, and `artist.hotttnesss`:
+
+```{r}
+#| message: false
+#| cache: true
+music_data |>
+  summarise(
+    `artist.location` = sum(artist.location == 0),
+    `release.name` = sum(release.name == 0),
+    `song.title` = sum(song.title == 0),
+    `song.year` = sum(song.year == 0),
+    `artist.familiarity` = sum(artist.familiarity == 0),
+    `artist.hotttnesss` = sum(artist.hotttnesss == 0)
+  ) |>
+  pivot_longer(everything(), names_to = "Column Name", values_to = "Placeholder Count") |>
+  mutate(
+    `Total Rows` = nrow(music_data),
+    `Percentage (%)` = round((`Placeholder Count` / `Total Rows`) * 100, 2)
+  ) |>
+  knitr::kable()
+```
+
+## Artist Coordinate Analysis (Usable vs. Placeholder)
+
+Artist geographic locations are stored as latitude and longitude coordinates. We define coordinates as **placeholder** if both the latitude and longitude are exactly `0`, and **usable** if at least one coordinate is non-zero. Below, we count the number of placeholder vs. usable coordinates at both the unique artist level and the song/record level:
+
+```{r}
+#| message: false
+#| cache: true
+# 1. Unique Artist Level
+artist_coordinates <- music_data |>
+  group_by(artist.id, artist.name) |>
+  summarise(
+    Latitude = first(artist.latitude),
+    Longitude = first(artist.longitude),
+    .groups = "drop"
+  ) |>
+  mutate(
+    `Coordinate Status` = ifelse(Latitude == 0 & Longitude == 0, "Placeholder (Both 0)", "Usable Coordinates")
+  ) |>
+  count(`Coordinate Status`) |>
+  mutate(
+    Level = "Unique Artist Level",
+    Percentage = round((n / sum(n)) * 100, 2)
+  )
+
+# 2. Song/Record Level
+song_coordinates <- music_data |>
+  mutate(
+    `Coordinate Status` = ifelse(artist.latitude == 0 & artist.longitude == 0, "Placeholder (Both 0)", "Usable Coordinates")
+  ) |>
+  count(`Coordinate Status`) |>
+  mutate(
+    Level = "Song/Record Level",
+    Percentage = round((n / sum(n)) * 100, 2)
+  )
+
+# 3. Combine and print
+bind_rows(artist_coordinates, song_coordinates) |>
+  select(Level, `Coordinate Status`, Count = n, `Percentage (%)` = Percentage) |>
+  knitr::kable()
+```
+
+## Geographic Distribution of Artists by Song Release Year
+
+Below, we visualize the geographic locations of music artists on a world map, color-coded by the release year of their songs. We filter out artists with placeholder coordinates (where both latitude and longitude are `0`) and those with missing song release years (where `song.year == 0`). The remaining artist locations are plotted as points colored by the release year (using the viridis color scale) on a world map background retrieved from the `maps` package:
+
+```{r}
+#| message: false
+#| cache: true
+# 1. Filter out placeholder coordinates and missing years, group by artist
+artist_locations <- music_data |>
+  filter(artist.latitude != 0 | artist.longitude != 0) |>
+  filter(song.year != 0) |>
+  group_by(artist.id) |>
+  summarise(
+    Latitude = first(artist.latitude),
+    Longitude = first(artist.longitude),
+    Artist = first(artist.name),
+    Year = first(song.year),
+    .groups = "drop"
+  )
+
+# 2. Retrieve world map background data
+world_map <- map_data("world")
+
+# 3. Plot map
+ggplot() +
+  geom_polygon(data = world_map, aes(x = long, y = lat, group = group), 
+               fill = "#f4f4f4", color = "#d3d3d3", linewidth = 0.1) +
+  geom_point(data = artist_locations, aes(x = Longitude, y = Latitude, color = Year), 
+             alpha = 0.7, size = 1.0) +
+  coord_quickmap() +
+  scale_color_viridis_c(
+    option = "viridis", 
+    name = "Release Year",
+    breaks = seq(1930, 2010, 10), 
+    limits = c(1925, 2010)
+  ) +
+  labs(
+    title = "Global Distribution of Music Artists by Song Release Year",
+    subtitle = paste0("Locations of unique artists colored by release year of their songs (n = ", 
+                      scales::comma(nrow(artist_locations)), "); excludes missing coordinates/years"),
+    x = "Longitude",
+    y = "Latitude"
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(
+    plot.title = element_text(face = "bold", size = 13, color = "#2c3e50"),
+    plot.subtitle = element_text(size = 9, color = "#7f8c8d", margin = margin(b = 10)),
+    axis.title = element_text(face = "bold", color = "#34495e"),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold", size = 10)
+  )
+```
+
+
+
+
+
+

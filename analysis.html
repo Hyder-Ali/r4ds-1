@@ -563,6 +563,395 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </section>
+<section id="reading-external-music-data" class="level2">
+<h2 class="anchored" data-anchor-id="reading-external-music-data">Reading External Music Data</h2>
+<p>Finally, we load the external <code>music.csv</code> dataset using <code>readr::read_csv()</code> (with column types messaging suppressed) and print the resulting tibble:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10,000 × 35
+   artist.familiarity artist.hotttnesss artist.id          artist.latitude
+                &lt;dbl&gt;             &lt;dbl&gt; &lt;chr&gt;                        &lt;dbl&gt;
+ 1              0.582             0.402 ARD7TVE1187B99BFB1             0  
+ 2              0.631             0.417 ARMJAGH1187FB546F3            35.1
+ 3              0.487             0.343 ARKRRTF1187B9984DA             0  
+ 4              0.630             0.454 AR7G5I41187FB4CE6C             0  
+ 5              0.651             0.402 ARXR32B1187FB57099             0  
+ 6              0.535             0.385 ARKFYS91187B98E58F             0  
+ 7              0.556             0.262 ARD0S291187B9B7BF5             0  
+ 8              0.801             0.606 AR10USD1187B99F3F1             0  
+ 9              0.427             0.332 AR8ZCNI1187B9A069B             0  
+10              0.551             0.423 ARNTLGG11E2835DDB9             0  
+# ℹ 9,990 more rows
+# ℹ 31 more variables: artist.location &lt;dbl&gt;, artist.longitude &lt;dbl&gt;,
+#   artist.name &lt;chr&gt;, artist.similar &lt;dbl&gt;, artist.terms &lt;chr&gt;,
+#   artist.terms_freq &lt;dbl&gt;, release.id &lt;dbl&gt;, release.name &lt;dbl&gt;,
+#   song.artist_mbtags &lt;dbl&gt;, song.artist_mbtags_count &lt;dbl&gt;,
+#   song.bars_confidence &lt;dbl&gt;, song.bars_start &lt;dbl&gt;,
+#   song.beats_confidence &lt;dbl&gt;, song.beats_start &lt;dbl&gt;, song.duration &lt;dbl&gt;, …</code></pre>
+</div>
+</div>
+</section>
+<section id="structure-of-artist-columns" class="level2">
+<h2 class="anchored" data-anchor-id="structure-of-artist-columns">Structure of Artist Columns</h2>
+<p>Below, we select only the columns containing artist-related information from the <code>music</code> dataset and display their structure, including column types and sample values, using <code>dplyr::glimpse()</code>:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 10,000
+Columns: 12
+$ artist.familiarity       &lt;dbl&gt; 0.58179377, 0.63063004, 0.48735679, 0.6303823…
+$ artist.hotttnesss        &lt;dbl&gt; 0.4019975, 0.4174996, 0.3434284, 0.4542312, 0…
+$ artist.id                &lt;chr&gt; "ARD7TVE1187B99BFB1", "ARMJAGH1187FB546F3", "…
+$ artist.latitude          &lt;dbl&gt; 0.00000, 35.14968, 0.00000, 0.00000, 0.00000,…
+$ artist.location          &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ artist.longitude         &lt;dbl&gt; 0.00000, -90.04892, 0.00000, 0.00000, 0.00000…
+$ artist.name              &lt;chr&gt; "Casual", "The Box Tops", "Sonora Santanera",…
+$ artist.similar           &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ artist.terms             &lt;chr&gt; "hip hop", "blue-eyed soul", "salsa", "pop ro…
+$ artist.terms_freq        &lt;dbl&gt; 1.0000000, 1.0000000, 1.0000000, 0.9885839, 0…
+$ song.artist_mbtags       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+$ song.artist_mbtags_count &lt;dbl&gt; 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, …</code></pre>
+</div>
+</div>
+<section id="explanation-of-artist-familiarity-and-hotttnesss" class="level3">
+<h3 class="anchored" data-anchor-id="explanation-of-artist-familiarity-and-hotttnesss">Explanation of Artist Familiarity and Hotttnesss</h3>
+<p>Based on the documentation for the Million Song Dataset: * <strong><code>artist.familiarity</code></strong>: This column contains a numerical estimate (ranging from <code>0</code> to <code>1</code>) indicating how “familiar” or well-known the artist is to the general listening public. It is calculated by The Echo Nest (now part of Spotify) using aggregated statistics such as the artist’s historical listening counts, playlist appearances, and web metadata. * <strong><code>artist.hotttnesss</code></strong>: This column contains a numerical estimate (ranging from <code>0</code> to <code>1</code>) measuring the artist’s current popularity or “buzz” at the time the dataset was compiled. Unlike familiarity—which reflects long-term recognition—“hotttnesss” represents short-term momentum, capturing social media attention, web search trends, and recent radio play.</p>
+</section>
+</section>
+<section id="summary-statistics-for-key-variables" class="level2">
+<h2 class="anchored" data-anchor-id="summary-statistics-for-key-variables">Summary Statistics for Key Variables</h2>
+<p>Below, we compute the summary statistics—including the minimum, 1st quartile (Q1), median, mean, 3rd quartile (Q3), and maximum—for <code>artist.familiarity</code>, <code>artist.hotttnesss</code>, <code>song.year</code>, and <code>song.tempo</code> using a reshaped summary table:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 22%">
+<col style="width: 4%">
+<col style="width: 13%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 15%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: right;">Min</th>
+<th style="text-align: right;">Q1</th>
+<th style="text-align: right;">Median</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Q3</th>
+<th style="text-align: right;">Max</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">artist.familiarity</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.4675700</td>
+<td style="text-align: right;">0.5635836</td>
+<td style="text-align: right;">0.5652295</td>
+<td style="text-align: right;">0.6680202</td>
+<td style="text-align: right;">1.000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">artist.hotttnesss</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.3252656</td>
+<td style="text-align: right;">0.3807423</td>
+<td style="text-align: right;">0.3855522</td>
+<td style="text-align: right;">0.4538581</td>
+<td style="text-align: right;">1.082503</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">song.tempo</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">96.9595000</td>
+<td style="text-align: right;">120.1565000</td>
+<td style="text-align: right;">122.9009133</td>
+<td style="text-align: right;">144.0067500</td>
+<td style="text-align: right;">262.828000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">song.year</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">934.7046000</td>
+<td style="text-align: right;">2000.0000000</td>
+<td style="text-align: right;">2010.000000</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<section id="observations" class="level3">
+<h3 class="anchored" data-anchor-id="observations">Observations</h3>
+<ul>
+<li><strong>Data Quality Issue for <code>song.year</code></strong>: Note that <code>song.year</code> has a minimum, Q1, and median of <code>0</code>. This indicates a significant portion of missing year values that are coded as <code>0</code> in the dataset.</li>
+<li><strong>Range of <code>artist.hotttnesss</code></strong>: The maximum value for <code>artist.hotttnesss</code> is slightly above <code>1</code> (at <code>1.08</code>), indicating minor outliers in the algorithm’s output metrics.</li>
+</ul>
+</section>
+</section>
+<section id="song-release-year-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="song-release-year-distribution">Song Release Year Distribution</h2>
+<p>Below, we filter out songs with missing release years (where <code>song.year == 0</code>) and plot the distribution of release years for the remaining tracks. The total number of valid songs is dynamically computed and included in the chart’s subtitle:</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="analysis_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="preview-of-human-readable-song-data" class="level2">
+<h2 class="anchored" data-anchor-id="preview-of-human-readable-song-data">Preview of Human-Readable Song Data</h2>
+<p>Below, we select and format the most human-readable columns of the <code>music</code> dataset, presenting a preview table of the first 10 rows:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 8%">
+<col style="width: 17%">
+<col style="width: 15%">
+<col style="width: 11%">
+<col style="width: 9%">
+<col style="width: 10%">
+<col style="width: 4%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Artist Name</th>
+<th style="text-align: right;">Location</th>
+<th style="text-align: left;">Coordinates</th>
+<th style="text-align: left;">Genre</th>
+<th style="text-align: right;">Familiarity</th>
+<th style="text-align: right;">Hotness</th>
+<th style="text-align: right;">Song Title</th>
+<th style="text-align: right;">Year</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Casual</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0, 0</td>
+<td style="text-align: left;">hip hop</td>
+<td style="text-align: right;">0.5817938</td>
+<td style="text-align: right;">0.4019975</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">The Box Tops</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">35.1497, -90.0489</td>
+<td style="text-align: left;">blue-eyed soul</td>
+<td style="text-align: right;">0.6306300</td>
+<td style="text-align: right;">0.4174996</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1969</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Sonora Santanera</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0, 0</td>
+<td style="text-align: left;">salsa</td>
+<td style="text-align: right;">0.4873568</td>
+<td style="text-align: right;">0.3434284</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Adam Ant</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0, 0</td>
+<td style="text-align: left;">pop rock</td>
+<td style="text-align: right;">0.6303823</td>
+<td style="text-align: right;">0.4542312</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1982</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Gob</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0, 0</td>
+<td style="text-align: left;">pop punk</td>
+<td style="text-align: right;">0.6510457</td>
+<td style="text-align: right;">0.4017237</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">2007</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Jeff And Sheri Easter</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0, 0</td>
+<td style="text-align: left;">southern gospel</td>
+<td style="text-align: right;">0.5352927</td>
+<td style="text-align: right;">0.3854706</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Rated R</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0, 0</td>
+<td style="text-align: left;">breakbeat</td>
+<td style="text-align: right;">0.5564956</td>
+<td style="text-align: right;">0.2619412</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Tweeterfriendly Music</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0, 0</td>
+<td style="text-align: left;">post-hardcore</td>
+<td style="text-align: right;">0.8011364</td>
+<td style="text-align: right;">0.6055071</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Planet P Project</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0, 0</td>
+<td style="text-align: left;">new wave</td>
+<td style="text-align: right;">0.4266679</td>
+<td style="text-align: right;">0.3322757</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1984</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Clp</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">0, 0</td>
+<td style="text-align: left;">breakcore</td>
+<td style="text-align: right;">0.5505137</td>
+<td style="text-align: right;">0.4227056</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="analyzing-placeholders-and-missing-data" class="level2">
+<h2 class="anchored" data-anchor-id="analyzing-placeholders-and-missing-data">Analyzing Placeholders and Missing Data</h2>
+<p>Many columns in this dataset contain placeholder values (coded as <code>0</code>) rather than typical <code>NA</code> values to represent missing data. Below, we count the number of rows containing these placeholders in <code>artist.location</code>, <code>release.name</code>, <code>song.title</code>, <code>song.year</code>, <code>artist.familiarity</code>, and <code>artist.hotttnesss</code>:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Column Name</th>
+<th style="text-align: right;">Placeholder Count</th>
+<th style="text-align: right;">Total Rows</th>
+<th style="text-align: right;">Percentage (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">artist.location</td>
+<td style="text-align: right;">9999</td>
+<td style="text-align: right;">10000</td>
+<td style="text-align: right;">99.99</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">release.name</td>
+<td style="text-align: right;">9989</td>
+<td style="text-align: right;">10000</td>
+<td style="text-align: right;">99.89</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">song.title</td>
+<td style="text-align: right;">9992</td>
+<td style="text-align: right;">10000</td>
+<td style="text-align: right;">99.92</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">song.year</td>
+<td style="text-align: right;">5320</td>
+<td style="text-align: right;">10000</td>
+<td style="text-align: right;">53.20</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">artist.familiarity</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">10000</td>
+<td style="text-align: right;">0.24</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">artist.hotttnesss</td>
+<td style="text-align: right;">496</td>
+<td style="text-align: right;">10000</td>
+<td style="text-align: right;">4.96</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="artist-coordinate-analysis-usable-vs.-placeholder" class="level2">
+<h2 class="anchored" data-anchor-id="artist-coordinate-analysis-usable-vs.-placeholder">Artist Coordinate Analysis (Usable vs.&nbsp;Placeholder)</h2>
+<p>Artist geographic locations are stored as latitude and longitude coordinates. We define coordinates as <strong>placeholder</strong> if both the latitude and longitude are exactly <code>0</code>, and <strong>usable</strong> if at least one coordinate is non-zero. Below, we count the number of placeholder vs.&nbsp;usable coordinates at both the unique artist level and the song/record level:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Level</th>
+<th style="text-align: left;">Coordinate Status</th>
+<th style="text-align: right;">Count</th>
+<th style="text-align: right;">Percentage (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Unique Artist Level</td>
+<td style="text-align: left;">Placeholder (Both 0)</td>
+<td style="text-align: right;">2830</td>
+<td style="text-align: right;">63.78</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unique Artist Level</td>
+<td style="text-align: left;">Usable Coordinates</td>
+<td style="text-align: right;">1607</td>
+<td style="text-align: right;">36.22</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Song/Record Level</td>
+<td style="text-align: left;">Placeholder (Both 0)</td>
+<td style="text-align: right;">6258</td>
+<td style="text-align: right;">62.58</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Song/Record Level</td>
+<td style="text-align: left;">Usable Coordinates</td>
+<td style="text-align: right;">3742</td>
+<td style="text-align: right;">37.42</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="geographic-distribution-of-artists-by-song-release-year" class="level2">
+<h2 class="anchored" data-anchor-id="geographic-distribution-of-artists-by-song-release-year">Geographic Distribution of Artists by Song Release Year</h2>
+<p>Below, we visualize the geographic locations of music artists on a world map, color-coded by the release year of their songs. We filter out artists with placeholder coordinates (where both latitude and longitude are <code>0</code>) and those with missing song release years (where <code>song.year == 0</code>). The remaining artist locations are plotted as points colored by the release year (using the viridis color scale) on a world map background retrieved from the <code>maps</code> package:</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="analysis_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
 
 </main>
 <!-- /main column -->
